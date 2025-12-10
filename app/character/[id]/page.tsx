@@ -168,7 +168,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       `.trim();
       
       // (3) AI에게 보낼 대화 기록 구성 (이전과 동일)
-      const historyForAI = messages.slice(-20).map(msg => ({ 
+      const historyForAI = messages.slice(-60).map(msg => ({ 
         role: msg.role, 
         content: msg.content 
       }));
