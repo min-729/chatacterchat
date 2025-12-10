@@ -49,12 +49,21 @@ export default function Home() {
       {/* 타이틀 영역 */}
       <header className="w-full max-w-4xl flex justify-between items-center mb-10 mt-4">
         <h1 className="text-3xl font-bold text-indigo-700">🎭 나의 AI 캐릭터</h1>
+        <div className="flex space-x-3">
+            {/* ⭐ 유저 프로필 설정 링크 추가 */}
+            <Link 
+              href="/profile" 
+              className="bg-gray-200 text-gray-700 px-5 py-2 rounded-full font-bold hover:bg-gray-300 transition shadow-md"
+            >
+              👤 내 프로필
+            </Link>
         <Link 
           href="/character/register" 
           className="bg-indigo-600 text-white px-5 py-2 rounded-full font-bold hover:bg-indigo-700 transition shadow-md"
         >
           + 새 캐릭터 등록
         </Link>
+      </div>
       </header>
 
       {/* 로딩 중일 때 */}
