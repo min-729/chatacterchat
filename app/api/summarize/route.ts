@@ -29,7 +29,7 @@ export async function POST(req: Request) {
 
     // 콘텐츠 생성 요청
     const response = await genAI.models.generateContent({
-      model: 'gemini-1.5-flash',
+      model: 'gemini-1.5-flash-001',
       contents: [{
         role: 'user',
         parts: [{ text: prompt }]
