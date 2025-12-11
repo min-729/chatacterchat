@@ -145,16 +145,16 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const handleSend = useCallback(async () => {
     if (!input.trim() || !character || !userProfile || isSending || !conversationId) return;
     setIsSending(true);
-    const userInput = input;
-    setInput('');
+    const userInput = input; // 현재 입력값 저장
+    setInput(''); // 입력창 비우기
 
     try {
-      // 유령 문서 방지 (대화방 생성)
       const convRef = doc(db, 'characters', characterId as string, 'conversations', conversationId);
       await setDoc(convRef, { createdAt: serverTimestamp() }, { merge: true }); 
       
-      // 메시지 저장
       const msgRef = collection(convRef, 'messages');
+      
+      // 1. 내 메시지 Firestore에 저장
       await addDoc(msgRef, { role: 'user', content: userInput, createdAt: serverTimestamp() });
 
       // 시스템 프롬프트 구성
@@ -166,15 +166,27 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         [Style] ${character.stylePrompt}
       `.trim();
       
-      const historyForAI = messages.slice(-60).map(msg => ({ 
-        role: msg.role, 
-        content: msg.content 
-        }));
+      // ⭐ [수정됨] AI에게 보낼 대화 내역 만들기
+      // 기존 messages 상태에 방금 입력한 userInput을 강제로 붙여서 보낸다.
+      const currentHistory = [
+          ...messages, 
+          { role: 'user', content: userInput }
+      ];
 
+      // 최근 30개 정도만 잘라서 보내자 (너무 길면 비용 문제 & 오류 가능성)
+      const historyForAI = currentHistory.slice(-30).map(msg => ({ 
+        role: msg.role === 'user' ? 'user' : 'model', // 역할 명시
+        content: msg.content 
+      }));
+
+      // API 호출
       const res = await fetch('/api/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ characterSettings: { ...character, systemPrompt: fullSystemInstruction }, messages: historyForAI }),
+        body: JSON.stringify({ 
+            characterSettings: { ...character, systemPrompt: fullSystemInstruction }, 
+            messages: historyForAI // ⭐ 최신 메시지가 포함된 내역 전송
+        }),
       });
 
       const data = await res.json();
@@ -218,7 +230,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       <div className="flex-1 overflow-y-auto">
         {messages.map((msg) => {
           // ⭐ [튕김 방지 핵심] createdAt이 없거나(null), seconds가 없으면 렌더링하지 않고 넘어감
-          if (msg.role === 'model' && (!msg.createdAt || msg.createdAt.seconds === 0)) return null; 
+          if (msg.role === 'model' && !msg.content) return null; 
 
           const isModel = msg.role === 'model';
           return (
