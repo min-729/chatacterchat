@@ -186,6 +186,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
       await addDoc(messageCollectionRef, { role: 'user', content: userInput, createdAt: serverTimestamp() });
 
+      
       // ⭐ 시스템 프롬프트에 '이전 대화 요약' 추가
       let summaryContext = "";
       if (summary) {
