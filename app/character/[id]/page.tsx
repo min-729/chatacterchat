@@ -202,7 +202,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       `.trim();
       
       // ⭐ 요약이 있으면 최근 메시지 개수를 줄여서 보냄 (비용 절약)
-      const recentMessagesCount = summary ? -20 : -40; 
+      const recentMessagesCount = summary ? -40 : -60; 
       const historyForAI = messages.slice(recentMessagesCount).map(msg => ({ 
         role: msg.role, 
         content: msg.content 
@@ -257,7 +257,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                 className={`p-2 transition rounded-full text-sm font-semibold flex items-center ${summary ? 'text-sky-600 bg-sky-50' : 'text-gray-500 hover:bg-gray-50'}`}
                 title="대화 요약 관리"
             >
-                📝 요약 {summary && 'ON'}
+                기억 {summary && 'ON'}
             </button>
             <Link href={`/character/${characterId}/conversations`} className="p-2 text-gray-500 hover:text-gray-700 transition rounded-full hover:bg-gray-50 text-sm font-semibold">기록</Link>
             <button onClick={handleNewChat} className="p-2 text-sky-500 hover:text-sky-700 transition rounded-full hover:bg-sky-50 text-sm font-semibold">새 대화</button>
@@ -321,7 +321,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
               <div className="flex-1 min-w-0">
                 <div className="flex items-center mb-0.5">
                   <span className="font-bold text-gray-900 mr-1.5">{name}</span>
-                  <span className="text-gray-500 text-sm">{isModel ? `@ai_bot` : `@user`}</span>
+                  <span className="text-gray-500 text-sm">{isModel ? `@k4mishiro` : `@4kiyama`}</span>
                 </div>
                 <div className="text-gray-900 text-[15px] leading-normal whitespace-pre-wrap break-words">{msg.content}</div>
               </div>
