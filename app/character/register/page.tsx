@@ -174,7 +174,7 @@ function ChatContent({ id }: { id: string }) {
       ];
 
       // 최근 30개만 자르기 (요약 여부와 상관없이 적절히 조절)
-      const historyForAI = currentHistory.slice(-30).map(msg => ({ 
+      const historyForAI = currentHistory.slice(-50).map(msg => ({ 
           role: msg.role === 'user' ? 'user' : 'model', 
           content: msg.content 
       }));
