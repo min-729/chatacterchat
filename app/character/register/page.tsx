@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef, use } from 'react';
+import React, { useState, useEffect, useCallback, useRef, use, Suspense } from 'react';
 import { useSearchParams, useRouter, usePathname } from 'next/navigation';
 import { db } from '@/firebase/clientApp';
 import { doc, getDoc, collection, addDoc, query, orderBy, onSnapshot, serverTimestamp, setDoc } from 'firebase/firestore';
@@ -31,13 +31,13 @@ const generateUUID = () => {
   });
 };
 
-export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = use(params);
+// ⭐ 1. 알맹이 컴포넌트 (ChatContent)
+function ChatContent({ id }: { id: string }) {
   const characterId = id;
 
   const router = useRouter();
   const pathname = usePathname();
-  const searchParams = useSearchParams();
+  const searchParams = useSearchParams(); // Suspense 안에서 안전하게 호출됨
   
   const initialConversationId = searchParams.get('conversationId');
 
@@ -141,7 +141,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     setIsSummaryOpen(false);
   };
 
-  // 3. 메시지 전송
+  // 3. 메시지 전송 (여기가 수정됨!)
   const handleSend = useCallback(async () => {
     if (!input.trim() || !character || !userProfile || isSending || !conversationId) return;
     setIsSending(true);
@@ -166,9 +166,18 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         [Style] ${character.stylePrompt}
       `.trim();
       
-      const historyCount = summary ? -60 : -60; // 요약 있으면 기억 범위 줄여서 비용 절약
-      const historyForAI = messages.slice(historyCount).map(msg => ({ role: msg.role, content: msg.content }));
-      historyForAI.push({ role: 'user', content: userInput });
+      // ⭐ AI에게 보낼 히스토리 만들기 (방금 입력한 내용 포함)
+      // 기존 방식보다 안전하게 전개 연산자 사용
+      const currentHistory = [
+          ...messages,
+          { role: 'user', content: userInput }
+      ];
+
+      // 최근 30개만 자르기 (요약 여부와 상관없이 적절히 조절)
+      const historyForAI = currentHistory.slice(-30).map(msg => ({ 
+          role: msg.role === 'user' ? 'user' : 'model', 
+          content: msg.content 
+      }));
 
       const res = await fetch('/api/chat', {
         method: 'POST',
@@ -216,8 +225,9 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       {/* 메시지 영역 */}
       <div className="flex-1 overflow-y-auto">
         {messages.map((msg) => {
-          // ⭐ [튕김 방지 핵심] createdAt이 없거나(null), seconds가 없으면 렌더링하지 않고 넘어감
-          if (msg.role === 'model' && (!msg.createdAt || msg.createdAt.seconds === 0)) return null; 
+          // ⭐ [수정됨] 첫 인사를 숨기던 seconds === 0 조건 삭제함!
+          // AI 메시지인데 내용이 없는 경우만 숨김
+          if (msg.role === 'model' && !msg.content) return null; 
 
           const isModel = msg.role === 'model';
           return (
@@ -242,5 +252,16 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         </div>
       </div>
     </div>
+  );
+}
+
+// ⭐ 2. Suspense로 감싼 껍데기 컴포넌트
+export default function ChatPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = use(params);
+
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center text-sky-600">무대 준비 중...</div>}>
+      <ChatContent id={id} />
+    </Suspense>
   );
 }
