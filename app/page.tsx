@@ -9,7 +9,7 @@ export default function UserProfilePage() {
     const [name, setName] = useState('');
     const [inputAvatarUrl, setInputAvatarUrl] = useState(''); 
     const [userPersona, setUserPersona] = useState(''); 
-    const [userId, setUserId] = useState(''); // ⭐ 아이디 상태
+    // userId 상태 삭제됨
     
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -21,7 +21,7 @@ export default function UserProfilePage() {
                 setName(profile.name);
                 setInputAvatarUrl(profile.avatarUrl); 
                 setUserPersona(profile.userPersona);
-                setUserId(profile.userId || ''); // ⭐ 기존 아이디 불러오기
+                // userId 불러오기 삭제됨
             } catch (error) { console.error(error); } finally { setLoading(false); }
         }
         fetchData();
@@ -32,15 +32,11 @@ export default function UserProfilePage() {
         if (saving) return;
         setSaving(true);
         try {
-            // ⭐ 아이디 앞에 @가 없으면 자동으로 붙여주기 (선택 사항)
-            const formattedId = userId.startsWith('@') ? userId.substring(1) : userId;
-
-            // ⭐ 여기에 userId가 꼭 들어가야 에러가 해결됩니다!
+            // ⭐ userId 관련 로직 전부 삭제함 (에러 해결)
             const updatedProfile: UserProfile = {
                 name,
                 avatarUrl: inputAvatarUrl || 'https://abs.twimg.com/sticky/default_profile_images/default_profile_400x400.png',
                 userPersona,
-                userId: formattedId || 'user', // 아이디 저장 (없으면 user)
             };
             await saveUserProfile(updatedProfile);
             router.push('/'); 
@@ -70,14 +66,7 @@ export default function UserProfilePage() {
                         <input type="text" className="w-full px-4 py-2 bg-gray-50 border rounded-xl" value={name} onChange={(e) => setName(e.target.value)} required />
                     </div>
 
-                    {/* ⭐ 아이디 입력칸 */}
-                    <div>
-                        <label className="block text-gray-700 font-bold mb-1 text-sm">아이디 (예: minmin)</label>
-                        <div className="flex items-center">
-                            <span className="text-gray-500 mr-2">@</span>
-                            <input type="text" className="w-full px-4 py-2 bg-gray-50 border rounded-xl" value={userId} onChange={(e) => setUserId(e.target.value)} placeholder="your_id" />
-                        </div>
-                    </div>
+                    {/* ⭐ 아이디 입력칸 삭제됨 (에러 원인 제거) */}
                     
                     {/* 페르소나 */}
                     <div>

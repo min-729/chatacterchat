@@ -7,7 +7,7 @@ import { doc, getDoc, collection, addDoc, query, orderBy, onSnapshot, serverTime
 import { getUserProfile, UserProfile } from '@/firebase/userProfile';
 import Link from 'next/link';
 
-// 데이터 구조 정의
+// 데이터 구조 정의 (userId 삭제됨)
 interface CharacterSettings {
   name: string;
   avatarUrl: string;
@@ -239,7 +239,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           <div className="bg-gray-50 border-b p-4 shadow-inner">
               <textarea value={summary} onChange={(e) => setSummary(e.target.value)} className="w-full p-3 border rounded-md h-24 text-sm" placeholder="AI 요약 결과..." />
               <div className="flex justify-end space-x-2 mt-2">
-                  <button onClick={handleAiSummarize} disabled={isSummarizing} className="px-3 py-1 bg-white border rounded text-sm">🤖 자동 요약</button>
+                  <button onClick={handleAiSummarize} disabled={isSummarizing} className="px-3 py-1 bg-white border rounded text-sm">요약</button>
                   <button onClick={handleSaveSummary} className="px-3 py-1 bg-sky-600 text-white rounded text-sm font-bold">저장</button>
               </div>
           </div>
@@ -247,7 +247,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
       {/* 메시지 영역 */}
       <div className="flex-1 overflow-y-auto">
-        {/* ⭐⭐⭐ 여기가 핵심 수정 사항입니다: (m.createdAt && m.createdAt.seconds > 0) */}
+        {/* ⭐⭐⭐ 튕김 방지 안전장치 유지 */}
         {messages.filter(m => m.role !== 'model' || (m.createdAt && m.createdAt.seconds > 0)).length === 0 && (
             <div className="p-10 text-center border-b border-gray-100">
                 <div className="mt-6 text-sky-500 text-sm">대화를 시작해보세요!</div>
@@ -255,7 +255,6 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         )}
 
         {messages.map((msg) => {
-          // 튕김 방지 이중 체크: createdAt이 없으면 아예 그리지 않음
           if (msg.role === 'model' && (!msg.createdAt || !msg.createdAt.seconds)) return null; 
 
           const isModel = msg.role === 'model';
@@ -265,8 +264,10 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
               <div className="flex-1">
                 <div className="flex items-center mb-0.5">
                     <span className="font-bold text-gray-900 mr-1.5">{isModel ? character?.name : userProfile?.name}</span>
-                    {/* 아이디 표시 */}
-                    <span className="text-gray-500 text-sm">{isModel ? `@ai_bot` : `@${userProfile?.userId || 'user'}`}</span>
+                    {/* ⭐⭐⭐ 아이디 고정: k4mishiro / 4kiyama */}
+                    <span className="text-gray-500 text-sm">
+                        {isModel ? `@k4mishiro` : `@4kiyama`}
+                    </span>
                 </div>
                 <div className="text-gray-900 whitespace-pre-wrap leading-relaxed">{msg.content}</div>
               </div>
