@@ -28,7 +28,7 @@ export async function POST(req: Request) {
 
     // ⭐ 모델 이름을 맨 처음 썼던 것으로 되돌림 (이게 맞는 이름이었어!)
     const response = await genAI.models.generateContent({
-      model: 'gemini-1.5-flash', 
+      model: 'gemini-2.5-flash', 
       contents: [{
         role: 'user',
         parts: [{ text: prompt }]
