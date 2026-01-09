@@ -7,7 +7,7 @@ import { doc, getDoc, collection, addDoc, query, orderBy, onSnapshot, serverTime
 import { getUserProfile, UserProfile } from '@/firebase/userProfile';
 import Link from 'next/link';
 
-// 데이터 구조 정의 (userId 삭제됨)
+// 데이터 구조 정의
 interface CharacterSettings {
   name: string;
   avatarUrl: string;
@@ -49,9 +49,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const [loading, setLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   
-  // 제목 수정 상태
-  const [chatTitle, setChatTitle] = useState(''); 
-  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  // ❌ 제목 관련 상태(chatTitle) 삭제됨
 
   // 요약 관련 상태
   const [summary, setSummary] = useState('');
@@ -86,9 +84,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         if (convDoc.exists()) {
             const data = convDoc.data();
             if (data.currentSummary) setSummary(data.currentSummary);
-            setChatTitle(data.title || '제목 없는 대화');
-        } else {
-            setChatTitle('새로운 대화');
+            // ❌ 제목 불러오기 로직 삭제됨
         }
       } catch (error) { console.error("로딩 실패:", error); }
     }
@@ -126,17 +122,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     return () => clearTimeout(timeoutId);
   }, [messages]);
 
-  // 제목 저장
-  const handleSaveTitle = async () => {
-      if (!conversationId || !chatTitle.trim()) return;
-      try {
-          await setDoc(doc(db, 'characters', characterId as string, 'conversations', conversationId), { 
-              title: chatTitle,
-              createdAt: serverTimestamp() 
-          }, { merge: true });
-          setIsEditingTitle(false);
-      } catch (e) { console.error("제목 저장 실패", e); }
-  };
+  // ❌ 제목 저장 함수 삭제됨
 
   // 요약 기능
   const handleAiSummarize = async () => {
@@ -205,32 +191,15 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     <div className="flex flex-col h-screen max-w-2xl mx-auto bg-white border-x border-gray-100 relative">
       {/* 헤더 */}
       <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white/90 backdrop-blur-sm z-10">
-        <div className="flex items-center min-w-0 flex-1 mr-2">
-            <Link href="/" className="mr-3 flex-shrink-0"><svg className="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg></Link>
-            <div className="flex flex-col min-w-0">
-                <div className="text-xs text-sky-500 font-bold mb-0.5">{character?.name}</div>
-                {isEditingTitle ? (
-                    <input 
-                        type="text" 
-                        value={chatTitle} 
-                        onChange={(e) => setChatTitle(e.target.value)}
-                        className="text-sm font-bold text-gray-900 border-b border-sky-500 focus:outline-none bg-transparent w-full"
-                        autoFocus
-                        onBlur={handleSaveTitle} 
-                        onKeyDown={(e) => e.key === 'Enter' && handleSaveTitle()}
-                    />
-                ) : (
-                    <div onClick={() => setIsEditingTitle(true)} className="text-sm font-bold text-gray-900 truncate cursor-pointer flex items-center">
-                        {chatTitle} 
-                        <svg className="w-3 h-3 ml-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                    </div>
-                )}
-            </div>
+        <div className="flex items-center">
+            <Link href="/" className="mr-4"><svg className="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg></Link>
+            {/* ⭐ 제목 기능 삭제 후, 이름만 깔끔하게 표시 */}
+            <h2 className="text-lg font-bold text-gray-900">{character?.name}</h2>
         </div>
-        <div className='flex items-center space-x-1 flex-shrink-0'>
-            <button onClick={() => setIsSummaryOpen(!isSummaryOpen)} className={`p-2 rounded-full text-xs font-semibold ${summary ? 'text-sky-600 bg-sky-50' : 'text-gray-500'}`}>📝요약</button>
-            <Link href={`/character/${characterId}/conversations`} className="p-2 text-gray-500 text-xs font-semibold">목록</Link>
-            <button onClick={handleNewChat} className="p-2 text-sky-500 text-xs font-semibold">새 대화</button>
+        <div className='flex items-center space-x-2'>
+            <button onClick={() => setIsSummaryOpen(!isSummaryOpen)} className={`p-2 rounded-full text-sm font-semibold ${summary ? 'text-sky-600' : 'text-gray-500'}`}>요약</button>
+            <Link href={`/character/${characterId}/conversations`} className="p-2 text-gray-500 text-sm font-semibold">목록</Link>
+            <button onClick={handleNewChat} className="p-2 text-sky-500 text-sm font-semibold">새 대화</button>
         </div>
       </div>
 
@@ -247,7 +216,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
       {/* 메시지 영역 */}
       <div className="flex-1 overflow-y-auto">
-        {/* ⭐⭐⭐ 튕김 방지 안전장치 유지 */}
+        {/* ⭐ 튕김 방지 안전장치 */}
         {messages.filter(m => m.role !== 'model' || (m.createdAt && m.createdAt.seconds > 0)).length === 0 && (
             <div className="p-10 text-center border-b border-gray-100">
                 <div className="mt-6 text-sky-500 text-sm">대화를 시작해보세요!</div>
@@ -264,7 +233,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
               <div className="flex-1">
                 <div className="flex items-center mb-0.5">
                     <span className="font-bold text-gray-900 mr-1.5">{isModel ? character?.name : userProfile?.name}</span>
-                    {/* ⭐⭐⭐ 아이디 고정: k4mishiro / 4kiyama */}
+                    {/* ⭐ 아이디 고정 */}
                     <span className="text-gray-500 text-sm">
                         {isModel ? `@k4mishiro` : `@4kiyama`}
                     </span>
