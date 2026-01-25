@@ -194,7 +194,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             </Link>
         </div>
         <div className='flex items-center space-x-2'>
-            <button onClick={() => setIsSummaryOpen(!isSummaryOpen)} className={`p-2 rounded-full text-sm font-semibold ${summary ? 'text-sky-600' : 'text-gray-500'}`}>🧠 기억</button>
+            <button onClick={() => setIsSummaryOpen(!isSummaryOpen)} className={`p-2 rounded-full text-sm font-semibold ${summary ? 'text-sky-600' : 'text-gray-500'}`}>요약</button>
             <Link href={`/character/${characterId}/conversations`} className="p-2 text-gray-500 text-sm font-semibold">기록</Link>
             <button onClick={handleNewChat} className="p-2 text-sky-500 text-sm font-semibold">새 대화</button>
         </div>
@@ -205,7 +205,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           <div className="bg-gray-50 border-b p-4 shadow-inner">
               <textarea value={summary} onChange={(e) => setSummary(e.target.value)} className="w-full p-3 border rounded-md h-24 text-sm" placeholder="AI 요약 결과..." />
               <div className="flex justify-end space-x-2 mt-2">
-                  <button onClick={handleAiSummarize} disabled={isSummarizing} className="px-3 py-1 bg-white border rounded text-sm">🤖 자동 요약</button>
+                  <button onClick={handleAiSummarize} disabled={isSummarizing} className="px-3 py-1 bg-white border rounded text-sm">자동 요약</button>
                   <button onClick={handleSaveSummary} className="px-3 py-1 bg-sky-600 text-white rounded text-sm font-bold">저장</button>
               </div>
           </div>
