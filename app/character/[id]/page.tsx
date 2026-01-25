@@ -49,8 +49,6 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const [loading, setLoading] = useState(true);
   const [isSending, setIsSending] = useState(false);
   
-  // ❌ 제목 관련 상태(chatTitle) 삭제됨
-
   // 요약 관련 상태
   const [summary, setSummary] = useState('');
   const [isSummaryOpen, setIsSummaryOpen] = useState(false);
@@ -81,10 +79,8 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         setUserProfile(profile);
 
         const convDoc = await getDoc(doc(db, 'characters', characterId as string, 'conversations', conversationId));
-        if (convDoc.exists()) {
-            const data = convDoc.data();
-            if (data.currentSummary) setSummary(data.currentSummary);
-            // ❌ 제목 불러오기 로직 삭제됨
+        if (convDoc.exists() && convDoc.data().currentSummary) {
+            setSummary(convDoc.data().currentSummary);
         }
       } catch (error) { console.error("로딩 실패:", error); }
     }
@@ -121,8 +117,6 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     }, 100);
     return () => clearTimeout(timeoutId);
   }, [messages]);
-
-  // ❌ 제목 저장 함수 삭제됨
 
   // 요약 기능
   const handleAiSummarize = async () => {
@@ -193,12 +187,15 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between sticky top-0 bg-white/90 backdrop-blur-sm z-10">
         <div className="flex items-center">
             <Link href="/" className="mr-4"><svg className="w-5 h-5 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg></Link>
-            {/* ⭐ 제목 기능 삭제 후, 이름만 깔끔하게 표시 */}
             <h2 className="text-lg font-bold text-gray-900">{character?.name}</h2>
+            {/* ⭐ [수정] 아이콘을 이름 바로 옆으로 이동 (연필 모양) */}
+            <Link href={`/character/${characterId}/edit`} className="ml-2 text-gray-400 hover:text-sky-600 transition" title="캐릭터 수정">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+            </Link>
         </div>
         <div className='flex items-center space-x-2'>
-            <button onClick={() => setIsSummaryOpen(!isSummaryOpen)} className={`p-2 rounded-full text-sm font-semibold ${summary ? 'text-sky-600' : 'text-gray-500'}`}>요약</button>
-            <Link href={`/character/${characterId}/conversations`} className="p-2 text-gray-500 text-sm font-semibold">목록</Link>
+            <button onClick={() => setIsSummaryOpen(!isSummaryOpen)} className={`p-2 rounded-full text-sm font-semibold ${summary ? 'text-sky-600' : 'text-gray-500'}`}>🧠 기억</button>
+            <Link href={`/character/${characterId}/conversations`} className="p-2 text-gray-500 text-sm font-semibold">기록</Link>
             <button onClick={handleNewChat} className="p-2 text-sky-500 text-sm font-semibold">새 대화</button>
         </div>
       </div>
@@ -208,7 +205,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           <div className="bg-gray-50 border-b p-4 shadow-inner">
               <textarea value={summary} onChange={(e) => setSummary(e.target.value)} className="w-full p-3 border rounded-md h-24 text-sm" placeholder="AI 요약 결과..." />
               <div className="flex justify-end space-x-2 mt-2">
-                  <button onClick={handleAiSummarize} disabled={isSummarizing} className="px-3 py-1 bg-white border rounded text-sm">요약</button>
+                  <button onClick={handleAiSummarize} disabled={isSummarizing} className="px-3 py-1 bg-white border rounded text-sm">🤖 자동 요약</button>
                   <button onClick={handleSaveSummary} className="px-3 py-1 bg-sky-600 text-white rounded text-sm font-bold">저장</button>
               </div>
           </div>
@@ -216,7 +213,6 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
       {/* 메시지 영역 */}
       <div className="flex-1 overflow-y-auto">
-        {/* ⭐ 튕김 방지 안전장치 */}
         {messages.filter(m => m.role !== 'model' || (m.createdAt && m.createdAt.seconds > 0)).length === 0 && (
             <div className="p-10 text-center border-b border-gray-100">
                 <div className="mt-6 text-sky-500 text-sm">대화를 시작해보세요!</div>
@@ -233,10 +229,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
               <div className="flex-1">
                 <div className="flex items-center mb-0.5">
                     <span className="font-bold text-gray-900 mr-1.5">{isModel ? character?.name : userProfile?.name}</span>
-                    {/* ⭐ 아이디 고정 */}
-                    <span className="text-gray-500 text-sm">
-                        {isModel ? `@k4mishiro` : `@4kiyama`}
-                    </span>
+                    <span className="text-gray-500 text-sm">{isModel ? `@k4mishiro` : `@4kiyama`}</span>
                 </div>
                 <div className="text-gray-900 whitespace-pre-wrap leading-relaxed">{msg.content}</div>
               </div>
